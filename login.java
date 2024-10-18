@@ -1,4 +1,6 @@
 package com.example.feastarfeed;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -6,14 +8,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.widget.LinearLayout;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
@@ -32,16 +30,11 @@ public class login extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference userRef;
 
-    ConstraintLayout constraintLayout;
-
-    LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        Window window = getWindow();
-        window.setStatusBarColor(getColor(R.color.topic));
 
         database = FirebaseDatabase.getInstance();
         userRef = database.getReference("Users");
@@ -51,8 +44,6 @@ public class login extends AppCompatActivity {
         buttonLogin = findViewById(R.id.button_login);
         textView = findViewById(R.id.registerNow);
 
-        constraintLayout = findViewById(R.id.con);
-        linearLayout = findViewById(R.id.linear);
 
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,12 +62,12 @@ public class login extends AppCompatActivity {
                 password = String.valueOf(editTextPassword.getText());
 
                 if (TextUtils.isEmpty(email)) {
-                    Toast.makeText(login.this, "請輸入電子信箱", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this, "Enter email", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (TextUtils.isEmpty(password)) {
-                    Toast.makeText(login.this, "請輸入密碼", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this, "Enter password", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -110,7 +101,7 @@ public class login extends AppCompatActivity {
                         }
 
                         if (userFound) {
-                            Toast.makeText(getApplicationContext(), "登入成功", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Login successful", Toast.LENGTH_SHORT).show();
 
                             // 傳遞 currentUserUsername 給 PersonalPage
                             AccountFragment accountFragment = new AccountFragment();
@@ -134,7 +125,7 @@ public class login extends AppCompatActivity {
 
                             finish();
                         } else {
-                            Toast.makeText(login.this, "電子信箱或密碼錯誤", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(login.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -162,12 +153,6 @@ public class login extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(savedEmail) && !TextUtils.isEmpty(savedPassword)) {
             // 如果存在保存的 email 和 password，則進行登錄驗證
-            linearLayout.setBackgroundResource(R.drawable.autologin_bkg);
-            constraintLayout.setVisibility(View.GONE);
-            editTextEmail.setVisibility(View.GONE);
-            editTextPassword.setVisibility(View.GONE);
-            buttonLogin.setVisibility(View.GONE);
-            textView.setVisibility(View.GONE);
             Log.d("login-autoLogin","autoaccess");
 
             performAutoLogin(savedEmail, savedPassword);
