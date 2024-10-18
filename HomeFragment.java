@@ -3,22 +3,17 @@ package com.example.feastarfeed;
 import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
-
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-
-import androidx.fragment.app.Fragment;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,22 +21,23 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileImageClickListener  {
+public class HomeFragment extends Fragment implements VideoAdapter.OnProfileImageClickListener  {
     //private RecyclerView recyclerView;
     public List<Video> videoList;
     private List<Video> videoListRE;
+    private List<Video> hotvideoList;
     private List<Video> ADList;
     private List<Video> AdDADList;
     private List<Video> AdALLList;
@@ -66,10 +62,12 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
     private long parameterTimeLOW=4; //小於幾秒-parameterTime
     private long parameterTimeHIGH=8;//大於幾秒-parameterTime
     private long parameterRecom=3;//選擇喜好分數前幾名的加入"影片"推薦列表
+    private long parameterHotWatch=15;//選擇近期觀看次數前幾名的加入"影片"推薦列表
     ///////////以下為最後影片
     private long parameterVideoListTotal=3;/////以下兩個的比例要輪迴幾次
     private long parameterVideoList = 1; // 最終影片清單:先放入幾个videoList元素(演算法比例調整)
     private long parameterVideoListRE = 1; // 最終影片清單:然后放入幾个videoListRE元素
+    private long parameterhotvideoList = 1;// 最終影片清單:然后放入幾个 hotvideoList元素
     private long parameterTotalAD = 1;//最終影片清單:放入幾廣告
     private long ADparameterRecom=3;//無用。(選喜好前幾名加入"廣告"推薦) "目前和影片興趣共用和，請更改parameterRecom"
 
@@ -96,6 +94,13 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
     private String shopname;
     private String shopname1;
     private String shopnamefuck;
+    private String sponsorpic="https://firebasestorage.googleapis.com/v0/b/feastars-1861e.appspot.com/o/personalimages%2Fprofile_ubereat.jpg?alt=media&token=52b5bbde-51c0-4337-af49-9d542aced4e5";
+    private String sponsorname="ubereat";
+    private String goldpapapic ="https://firebasestorage.googleapis.com/v0/b/feastars-1861e.appspot.com/o/personalimages%2Fprofile_goldpapa.jpg?alt=media&token=c39cd13f-f9fb-4870-94c7-f3c71a5ee435";
+    private String goldpapaname = "goldpapa";
+
+    private String manwupic ="https://firebasestorage.googleapis.com/v0/b/feastars-1861e.appspot.com/o/personalimages%2Fprofile_manwu.jpg?alt=media&token=d3d701b9-b993-4962-a0da-35ee79745153";
+    private String manwuname = "manwu";
     Boolean doFav,doTag;
 
     private OnUploaderClickListener onUploaderClickListener;
@@ -147,6 +152,7 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
         // Initialize videoList and adapter (you may want to pass data from MainActivity or fetch it here)
         videoList = new ArrayList<>();
         videoListRE = new ArrayList<>();
+        hotvideoList = new ArrayList<>();
         WithTagADList = new ArrayList<>();
         ADList = new ArrayList<>();
         AdDADList = new ArrayList<>();
@@ -338,6 +344,9 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 
                     DatabaseReference NoTagADRecordRef2 = watchRecordsRef.child("Advertise").child("notag").child("ad"+idpass1);
                     DatabaseReference WithTagADRecordRef2 = watchRecordsRef.child("Advertise").child("withtag").child("ad"+idpass1);
+                    //////總共觀看
+                    DatabaseReference NoTagADRecordTotalRef = TotalWatchRef.child("Advertise").child("notag").child("ad"+idpass1);
+                    DatabaseReference WithTagADRecordTotalRef = TotalWatchRef.child("Advertise").child("withtag").child("ad"+idpass1);
 
                     /////////////////////////////////影片時間戳記紀錄
                     ////////////<3秒不喜歡
@@ -388,9 +397,49 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                             });
 
                         }else{
-
                         }
 
+                        //////總共觀看時間次數 目前只有廣告
+                        if((idpass1/100000)==1){
+                            /////////notag廣告
+                            NoTagADRecordTotalRef.child("才看一下").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        NoTagADRecordTotalRef.child("才看一下").setValue(newValue);
+
+
+                                    } else {
+                                        NoTagADRecordTotalRef.child("才看一下").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }else if((idpass1/100000)==2){
+                            /////////withtag廣告
+
+                            WithTagADRecordTotalRef.child("才看一下").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        WithTagADRecordTotalRef.child("才看一下").setValue(newValue);
+                                    } else {
+                                        WithTagADRecordTotalRef.child("才看一下").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }
 
 
                         ///////////////>10秒喜歡
@@ -411,8 +460,6 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                         DatabaseReference shopViewRef = FirebaseDatabase.getInstance().getReference().child("shopView");
                         String dateMonth = getCurrentMonth();
                         DatabaseReference monthShopViewRef = shopViewRef.child(dateMonth);
-                        DatabaseReference NoTagADRecordTotalRef = TotalWatchRef.child("Advertise").child("notag").child("ad"+idpass1).child("總觀看數");
-                        DatabaseReference WithTagADRecordTotalRef = TotalWatchRef.child("Advertise").child("withtag").child("ad"+idpass1).child("總觀看數");
 
 //                    newVidWatchRecordRef.addListenerForSingleValueEvent(new ValueEventListener() {
 //                        @Override
@@ -426,6 +473,50 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 //                            // 处理错误
 //                        }
 //                    });
+
+                        //////總共觀看時間次數 目前只有廣告
+                        if((idpass1/100000)==1){
+                            /////////notag廣告
+                            NoTagADRecordTotalRef.child("看完").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        NoTagADRecordTotalRef.child("看完").setValue(newValue);
+
+
+                                    } else {
+                                        NoTagADRecordTotalRef.child("看完").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }else if((idpass1/100000)==2){
+                            /////////withtag廣告
+
+                            WithTagADRecordTotalRef.child("看完").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        WithTagADRecordTotalRef.child("看完").setValue(newValue);
+                                    } else {
+                                        WithTagADRecordTotalRef.child("看完").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }
+
+                        /////觀看時間次數----期間
                         if((idpass1/100000)==1){
                             /////////notag廣告
                             notagPeriodWatchRef.child("看完").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -571,18 +662,18 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 /////算總觀看次數
                         if((idpass1/100000)==1){
                             /////////notag廣告
-                            NoTagADRecordTotalRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            NoTagADRecordTotalRef.child("總觀看數").addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
                                         long currentValue = dataSnapshot.getValue(Long.class);
                                         long newValue = currentValue +1 ; ///////觀看次數加 1
-                                        NoTagADRecordTotalRef.setValue(newValue);
+                                        NoTagADRecordTotalRef.child("總觀看數").setValue(newValue);
 
                                         ///////////////>10秒喜歡
 
                                     } else {
-                                        NoTagADRecordTotalRef.setValue(1);
+                                        NoTagADRecordTotalRef.child("總觀看數").setValue(1);
                                     }
                                 }
                                 @Override
@@ -592,18 +683,18 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                             });
                         }else if((idpass1/100000)==2){
                             /////////withtag廣告
-                            WithTagADRecordTotalRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            WithTagADRecordTotalRef.child("總觀看數").addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
                                         long currentValue = dataSnapshot.getValue(Long.class);
                                         long newValue = currentValue +1 ; ///////觀看次數加 1
-                                        WithTagADRecordTotalRef.setValue(newValue);
+                                        WithTagADRecordTotalRef.child("總觀看數").setValue(newValue);
 
                                         ///////////////>10秒喜歡
 
                                     } else {
-                                        WithTagADRecordTotalRef.setValue(1);
+                                        WithTagADRecordTotalRef.child("總觀看數").setValue(1);
                                     }
                                 }
                                 @Override
@@ -740,7 +831,9 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 
 
 
-                    }
+
+                    } ////////////////////////>10秒喜歡END
+
                     else {
                         ///////////觀看時間在中間值的
                         if((idpass1/100000)==1){
@@ -789,7 +882,50 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 
                         }
 
-                    }
+                        //////總共觀看時間次數 目前只有廣告
+                        if((idpass1/100000)==1){
+                            /////////notag廣告
+                            NoTagADRecordTotalRef.child("觀看一段時間").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        NoTagADRecordTotalRef.child("觀看一段時間").setValue(newValue);
+
+
+                                    } else {
+                                        NoTagADRecordTotalRef.child("觀看一段時間").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }else if((idpass1/100000)==2){
+                            /////////withtag廣告
+
+                            WithTagADRecordTotalRef.child("觀看一段時間").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        long currentValue = dataSnapshot.getValue(Long.class);
+                                        long newValue = currentValue +1 ; ///////觀看次數加 1
+                                        WithTagADRecordTotalRef.child("觀看一段時間").setValue(newValue);
+                                    } else {
+                                        WithTagADRecordTotalRef.child("觀看一段時間").setValue(1);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    // Handle onCancelled
+                                }
+                            });
+                        }
+
+
+                    }///////////觀看時間在中間值的end
 
 
 
@@ -1058,14 +1194,15 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                     String address = "  ";
                     String date = " ";
                     String price = "   ";
-                    String uploader =" ";
-                    String profileImageUrl = " ";
+                    String uploader = sponsorname;
+                    String profileImageUrl = sponsorpic;
+
 
                     if (ADUrl == null || Aidprevention == null) {
                         // 如果有任何一个字段为空，则跳过当前影片的处理 不然上傳會出錯
                         continue;
                     }
-                    Video ad = new Video(ADUrl,title, address, date, price,Aid,uploader,profileImageUrl);
+                    Video ad = new Video(ADUrl,title, address, date, price,Aid,uploader,profileImageUrl, null);
                     ADList.add(ad);
                     AdALLList.add(ad);///////////全部廣告列表
                 }
@@ -1077,6 +1214,118 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
 
                 // loadAdvertiseFromFirebaseADVANCE();
                 p=true;
+
+
+
+
+
+                /////// ////////////////////////////////////////////新增熱門影片列表
+
+
+                DatabaseReference hotWatchRef = PeriodWatchRef.child("Videos");
+                // 獲取 "User/preferences" 節點
+                hotWatchRef.get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                    @Override
+                    public void onSuccess(DataSnapshot snapshot) {
+                        List<Map.Entry<String, Long>> entries = new ArrayList<>();
+                        Log.d("經過hot", "經過了");
+                        // 遍歷子節點並獲取觀看數
+                        for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                            String videoId = childSnapshot.getKey();
+                            Long viewCount = childSnapshot.child("近期觀看數").getValue(Long.class);
+                            entries.add(new AbstractMap.SimpleEntry<>(videoId, viewCount));
+                        }
+
+                        // 根據觀看數排序
+                        entries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+                        // 取出前x名並存入hotVideoList
+                        List<String> hotVideowatchList = new ArrayList<>();
+
+                        for (int i = 0; i < parameterHotWatch && i < entries.size(); i++) {
+                            hotVideowatchList.add(entries.get(i).getKey());
+                        }
+//                                                        for (String videoId : hotVideowatchList) {
+//                                                            Log.d("HotVideos", "Video ID: " + videoId);
+//                                                        }
+                        // 獲取 "Videos" 節點
+                        videosRef.get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                            @Override
+                            public void onSuccess(DataSnapshot snapshot) {
+                                for (DataSnapshot videoSnapshot : snapshot.getChildren()) {
+                                    Log.d("經過hot2", "經過了2");
+                                    String videoId = videoSnapshot.getKey();
+                                    Log.d("經過hot2", "videoId"+videoId);
+
+                                    if (hotVideowatchList.contains(videoId)) {
+                                        Log.d("經過hot2", "ru/4x97contain");
+                                        String title = videoSnapshot.child("title").getValue(String.class);
+                                        String address = videoSnapshot.child("address").getValue(String.class);
+                                        String date = videoSnapshot.child("date").getValue(String.class);
+                                        String price = videoSnapshot.child("price").getValue(String.class);
+                                        String videoUrl = videoSnapshot.child("videoUrl").getValue(String.class);
+                                        String uploader = videoSnapshot.child("Uploader").getValue(String.class);
+
+                                        String videoPic = snapshot.child("videoPic").getValue(String.class);
+
+                                        long id = videoSnapshot.child("id").getValue(long.class);
+                                        userRef.child(uploader).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                String profileImageUrl = dataSnapshot.child("profileImageUrl").getValue(String.class);
+
+                                                // 创建一个包含 profileImageUrl 的 Video 对象
+                                                Video video = new Video(videoUrl, title, address, date, price, id, uploader,profileImageUrl,videoPic);
+                                                hotvideoList.add(video);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Log.e(TAG, "Failed to read value.", error.toException());
+                                            }
+                                        });
+
+
+                                    }else{
+                                        Log.d("else了", "else了");
+                                    }
+
+                                }
+                                // 打亂列表順序
+                                Collections.shuffle(hotvideoList);
+                                Log.d("hotvideoList長度", String.valueOf(hotvideoList.size()));
+                                //Log.d("parameterRecom", String.valueOf(id));
+
+                                //loadAdvertiseFromFirebase();
+                                //loadAdvertiseFromFirebaseADVANCE();
+
+                                // 在這裡調用 loadVideosMIX()
+                                //loadVideosMIX();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // 處理錯誤
+                            }
+                        });
+
+
+                    }///re END
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // 處理錯誤
+                    }
+                });
+
+
+
+
+
+
+
+
+
             }
 
             @Override
@@ -1303,6 +1552,8 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                     String videoUrl = snapshot.child("videoUrl").getValue(String.class);
                     String uploader = snapshot.child("Uploader").getValue(String.class);
 
+                    String videoPic = snapshot.child("videoPic").getValue(String.class);
+
                     Long idprevention = snapshot.child("id").getValue(Long.class);
                     long id = (idprevention != null) ? idprevention : 0; // 如果为空，则设置为默认值 0
 
@@ -1318,7 +1569,7 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                             String profileImageUrl = dataSnapshot.child("profileImageUrl").getValue(String.class);
 
                             // 创建一个包含 profileImageUrl 的 Video 对象
-                            Video video = new Video(videoUrl, title, address, date, price, id, uploader, profileImageUrl);
+                            Video video = new Video(videoUrl, title, address, date, price, id, uploader, profileImageUrl, videoPic);
                             videoList.add(video);
                             Collections.shuffle(videoList);
                             adapter.notifyDataSetChanged();
@@ -1386,6 +1637,7 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                                     String price = videoSnapshot.child("price").getValue(String.class);
                                     String videoUrl = videoSnapshot.child("videoUrl").getValue(String.class);
                                     String uploader = videoSnapshot.child("Uploader").getValue(String.class);
+                                    String videoPic = videoSnapshot.child("videoPic").getValue(String.class);
 
                                     long id = videoSnapshot.child("id").getValue(long.class);
                                     userRef.child(uploader).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -1394,7 +1646,7 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                                             String profileImageUrl = dataSnapshot.child("profileImageUrl").getValue(String.class);
 
                                             // 创建一个包含 profileImageUrl 的 Video 对象
-                                            Video video = new Video(videoUrl, title, address, date, price, id, uploader,profileImageUrl);
+                                            Video video = new Video(videoUrl, title, address, date, price, id, uploader,profileImageUrl, videoPic);
                                             videoListRE.add(video);
                                         }
 
@@ -1439,15 +1691,16 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                                     String address = "  ";
                                     String date = " ";
                                     String price = "    ";
-                                    String uploader = videoSnapshot.child("uploader").getValue(String.class);
-                                    String profileImageUrl = "   ";
+                                    //String uploader = videoSnapshot.child("uploader").getValue(String.class);
+                                    String uploader = sponsorname;
+                                    String profileImageUrl = sponsorpic;
 
                                     if (ADUrl == null || Aidprevention == null) {
                                         // 如果有任何一个字段为空，则跳过当前影片的处理 不然上傳會出錯
                                         continue;
                                     }
 
-                                    Video AD = new Video(ADUrl,title, address, date, price,Aid,uploader,profileImageUrl);
+                                    Video AD = new Video(ADUrl,title, address, date, price,Aid,uploader,profileImageUrl, null);
 
                                     for (DataSnapshot tagValue : tagSnapshot.getChildren()) {
                                         String videoTag = tagValue.getValue(String.class);
@@ -1485,14 +1738,14 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                                                 String address = "  ";
                                                 String date = " ";
                                                 String price = "   ";
-                                                String uploader = "  ";
-                                                String profileImageUrl = "   ";
+                                                String uploader = sponsorname;
+                                                String profileImageUrl = sponsorpic;
 
                                                 if (ADUrl == null || Aidprevention == null) {
                                                     // 如果有任何一个字段为空，则跳过当前影片的处理 不然上傳會出錯
                                                     continue;
                                                 }
-                                                Video ad = new Video(ADUrl, title, address, date, price, Aid, uploader,profileImageUrl);
+                                                Video ad = new Video(ADUrl, title, address, date, price, Aid, uploader,profileImageUrl, null);
                                                 AdDADList.add(ad);
                                                 //AdALLList.add(ad);///////////全部廣告列表
                                             }
@@ -1525,14 +1778,14 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
                                                             String address = "  ";
                                                             String date = " ";
                                                             String price = "    ";
-                                                            String uploader = " ";
-                                                            String profileImageUrl = "   ";
+                                                            String uploader = sponsorname;
+                                                            String profileImageUrl = sponsorpic;
 
                                                             if (ADUrl == null || Aidprevention == null) {
                                                                 // 如果有任何一个字段为空，则跳过当前影片的处理 不然上傳會出錯
                                                                 continue;
                                                             }
-                                                            Video AD = new Video(ADUrl, title, address, date, price, Aid, uploader,profileImageUrl);
+                                                            Video AD = new Video(ADUrl, title, address, date, price, Aid, uploader,profileImageUrl, null);
                                                             AdDADList.add(AD);
                                                             //AdALLList.add(AD);///////////全部廣告列表
 
@@ -1657,21 +1910,29 @@ public class    HomeFragment extends Fragment implements VideoAdapter.OnProfileI
             //int maxSize = Math.max(videoListRE.size(), videoList.size());
             int videoListIndex = 0;
             int videoListREIndex = 0;
+            int hotvideoListIndex = 0;
             int ADmergedListIndex = 0;
             // int cycle = 0; // 记录当前循环次数
 
             while (videoListIndex < videoList.size() || videoListREIndex < videoListRE.size()) {
                 for (int j = 0; j < parameterVideoListTotal; j++) {
-
+                    Log.d("videoList長度2", String.valueOf(videoList.size()));
+                    Log.d("videoListRE長度2", String.valueOf(videoListRE.size()));
+                    Log.d("hotvideoList長度2", String.valueOf(hotvideoList.size()));
                     for (int i = 0; i < parameterVideoList && videoListIndex < videoList.size(); i++) {
-                        mergedList.add(videoList.get(videoListIndex));
+                        mergedList.add(videoList.get(videoListIndex));//////所有影片
                         Log.d("n位置id", String.valueOf(videoList.get(videoListIndex).getId()));
                         videoListIndex++;
                     }
                     for (int i = 0; i < parameterVideoListRE && videoListREIndex < videoListRE.size(); i++) {
-                        mergedList.add(videoListRE.get(videoListREIndex));
+                        mergedList.add(videoListRE.get(videoListREIndex));///有興趣影片
                         Log.d("re位置id", String.valueOf(videoListRE.get(videoListREIndex).getId()));
                         videoListREIndex++;
+                    }
+                    for (int i = 0; i < parameterhotvideoList && hotvideoListIndex < hotvideoList.size(); i++) {
+                        mergedList.add(hotvideoList.get(hotvideoListIndex));///熱門影片
+                        Log.d("hot位置id", String.valueOf(hotvideoList.get(hotvideoListIndex).getId()));
+                        hotvideoListIndex++;
                     }
                 }
                 if (ADmergedList != null) {

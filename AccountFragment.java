@@ -2,6 +2,7 @@ package com.example.feastarfeed;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -20,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,7 +53,7 @@ public class AccountFragment extends Fragment {
 
     private RecyclerView rvVideoPreview;
     public static List<Video> videoList, videoListClicked;
-    private TextView usernameTextView, bioTextView,savevideoTextview,postTextview;
+    private TextView usernameTextView, bioTextView,savevideoTextview,postTextview,videotext;
     private DatabaseReference userRef,personalvideoRef,collectionRef,videoNameRef;
     private EditText bioEditText;
 
@@ -97,7 +99,7 @@ public class AccountFragment extends Fragment {
         bioEditText = view.findViewById(R.id.bioEditText);
         savevideoTextview =view.findViewById(R.id.Savedvideo);
         postTextview = view.findViewById(R.id.post_count);
-
+        videotext = view.findViewById(R.id.videotext);
         videoList = new ArrayList<>();
 
         rvVideoPreview = view.findViewById(R.id.rvVideoPreview);
@@ -179,6 +181,9 @@ public class AccountFragment extends Fragment {
                     BioButton.setVisibility(View.VISIBLE);
                     userRef.child(username).child("bio").setValue(newBio);
                     bioTextView.setText(newBio);
+
+                    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
             }
         });
@@ -321,6 +326,18 @@ public class AccountFragment extends Fragment {
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.anim.slide_in2, R.anim.slide_out2);
                 fragmentTransaction.replace(R.id.frame_layout, new OwnCollectionFragment());
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }
+        });
+        videotext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.slide_in2, R.anim.slide_out2);
+                fragmentTransaction.replace(R.id.frame_layout, new OwnVideoFragment());
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -509,7 +526,7 @@ public class AccountFragment extends Fragment {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                                             String profileImageUrl = snapshot.getValue(String.class);
-                                            Video video = new Video(videoUrl, title, address, date, price, id, uploader, profileImageUrl);
+                                            Video video = new Video(videoUrl, title, address, date, price, id, uploader, profileImageUrl, videoPic);
                                             videoList.add(video);
                                             Log.d("previewArrayList", "previewArrayList: " + previewArrayList);
                                             Log.d("VideoList", "videoList: " + videoList);
