@@ -47,6 +47,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+//10/18
 public class AccountFragment extends Fragment {
 
     private RecyclerView rvVideoPreview;
