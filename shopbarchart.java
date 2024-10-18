@@ -1,18 +1,17 @@
 package com.example.feastarfeed;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.Spinner;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -38,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class shopbarchart extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -55,9 +55,6 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shopbarchart);
-
-        Window window = getWindow();
-        window.setStatusBarColor(getColor(R.color.topic));
 
         spinnerMonth = findViewById(R.id.spinner_month);
         //spinnerMonth.setOnItemSelectedListener(this);
@@ -81,7 +78,7 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
         spinnerMonth.setSelection(currentMonthIndex);
         spinnerMonth.setOnItemSelectedListener(this);
 
-        ImageView button1 = findViewById(R.id.button1);
+        Button button1 = findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,7 +125,7 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
                     List<String> xValues = new ArrayList<>();
                     int index = 0;
                     for (Map.Entry<String, Integer> entry : sortedData) {
-                        if (index < 3) {  //要列出幾個改這邊
+                        if (index < 5) {  //要列出幾個改這邊
                             entries.add(new BarEntry(index, entry.getValue().floatValue()));
                             xValues.add(entry.getKey());
                             index++;
@@ -175,7 +172,7 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
                             List<String> xValues = new ArrayList<>();
                             int index = 0;
                             for (Map.Entry<String, Integer> entry : sortedData) {
-                                if (index < 3) {  //要列出幾個改這邊
+                                if (index < 5) {  //要列出幾個改這邊
                                     entries.add(new BarEntry(index, entry.getValue().floatValue()));
                                     xValues.add(entry.getKey());
                                     index++;
@@ -223,7 +220,7 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
                                     List<String> xValues = new ArrayList<>();
                                     int index = 0;
                                     for (Map.Entry<String, Integer> entry : sortedData) {
-                                        if (index < 3) {  //要列出幾個改這邊
+                                        if (index < 5) {  //要列出幾個改這邊
                                             entries.add(new BarEntry(index, entry.getValue().floatValue()));
                                             xValues.add(entry.getKey());
                                             index++;
@@ -354,7 +351,7 @@ public class shopbarchart extends AppCompatActivity implements AdapterView.OnIte
         List<String> xValues = new ArrayList<>();
         int index = 0;
         for (Map.Entry<String, Integer> entry : sortedData) {
-            if (index < 3) { // 要列出幾個改這邊
+            if (index < 5) { // 要列出幾個改這邊
                 entries.add(new BarEntry(index, entry.getValue().floatValue()));
                 xValues.add(entry.getKey());
                 index++;

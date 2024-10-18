@@ -81,12 +81,7 @@ public class ClickedFragment extends Fragment {
         } else if (string.equals("others")) {
             videoList = OthersAccountFragment.videoListClicked;
         }
-        else if(string.equals("collection")){
-            videoList = OwnCollectionFragment.videoListClicked;
-        }
-        else if(string.equals("ownvideo")){
-            videoList = OwnVideoFragment.videoListClicked;
-        }
+
         tagArrayList = new ArrayList<>();
 
         username = SharedPreferencesUtils.getUsername(requireContext());
@@ -96,7 +91,7 @@ public class ClickedFragment extends Fragment {
 
         Log.d("Personal", "videoList: " + videoList);
 
-        adapter = new VideoAdapter(videoList, videosRef, fragmentManager, null, idPassCallback, null);
+        adapter = new VideoAdapter(videoList, videosRef, fragmentManager, null, idPassCallback);
         viewPager2.setAdapter(adapter);
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
