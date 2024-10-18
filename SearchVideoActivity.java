@@ -85,7 +85,6 @@ public class SearchVideoActivity extends AppCompatActivity {
                     String videoUrl = snapshot.child("videoUrl").getValue(String.class);
                     Long id = snapshot.child("id").getValue(Long.class);
                     String uploader = snapshot.child("Uploader").getValue(String.class);
-                    String videoPic = snapshot.child("videoPic").getValue(String.class);
                     DatabaseReference userRef= FirebaseDatabase.getInstance().getReference("Users");
 
                     userRef.child(uploader).child("profileImageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -94,7 +93,7 @@ public class SearchVideoActivity extends AppCompatActivity {
                             String profileImageUrl = snapshot.getValue(String.class);
                             if (title.equals(placeTitle)){
                                 Log.d("SearchVideo","placeName:"+ placeTitle);
-                                Video video = new Video(videoUrl,title, address, date, price, id,uploader,profileImageUrl,videoPic);
+                                Video video = new Video(videoUrl,title, address, date, price, id,uploader,profileImageUrl);
                                 videoList.add(video);
                             }
                         }

@@ -10,12 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.bluehomestudio.luckywheel.LuckyWheel;
 import com.bluehomestudio.luckywheel.OnLuckyWheelReachTheTarget;
@@ -35,8 +33,6 @@ public class MealSuggestFragment extends Fragment {
     String points, points_amount;
 
     int count=0;
-
-    ImageView close;
 
     private OnCountChangeListenerPop onCountChangeListenerpop;
 
@@ -88,19 +84,6 @@ public class MealSuggestFragment extends Fragment {
         } else {
             throw new IllegalStateException("Activity must implement OnCountChangeListener");
         }
-
-        close = view.findViewById(R.id.close);
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager fragmentManager = getParentFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.slide_in2, R.anim.slide_out2);
-                fragmentTransaction.replace(R.id.frame_layout,new AccountFragment());
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        });
 
         return view;
     }
