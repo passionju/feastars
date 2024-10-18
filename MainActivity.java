@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements TagFragment.OnCou
 
     private FirebaseDatabase database;
     private DatabaseReference userRef;
-    String username;
+    public String username;
 
 
     @Override
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements TagFragment.OnCou
         replaceFragment(searchFragment); // 切换到 SearchFragment
     }
 
-//    @Override
+    //    @Override
 //    public void onCountChangedother(String uploader) {
 //        OthersAccountFragment othersAccount = new OthersAccountFragment();
 //        Bundle bundle = new Bundle();
@@ -151,28 +151,31 @@ public class MainActivity extends AppCompatActivity implements TagFragment.OnCou
 //        othersAccount.setArguments(bundle); // 将 Bundle 设置为 Fragment 的参数
 //        replaceFragment(othersAccount); // 切换到 OthersAccountFragment
 //    }
-@Override
-public void onUploaderClicked(String uploader) {
-    Log.d("MainActivity","上傳和user = "+uploader +username);
+    @Override
+    public void onUploaderClicked(String uploader) {
+        String username = SharedPreferencesUtils.getUsername(MainActivity.this);
+        Log.d("MainActivity","上傳者= "+uploader +"使用者="+username);
 
-    if (uploader.equals(username)){
-        Log.d("MainActivity","有進來2 = "+uploader);
-        AccountFragment accountFragment = new AccountFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString("uploader", uploader);
-        accountFragment.setArguments(bundle);
-        replaceFragment(accountFragment);
 
+        if (uploader.equals(username)){
+            Log.d("MainActivity","是自己的頁面 = "+uploader);
+            AccountFragment accountFragment = new AccountFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("uploader", uploader);
+            accountFragment.setArguments(bundle);
+            replaceFragment(accountFragment);
+
+        }
+
+        else{
+            Log.d("MainActivity","他人的頁面 = "+uploader);
+            OthersAccountFragment othersAccount = new OthersAccountFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("uploader", uploader);
+            othersAccount.setArguments(bundle);
+            replaceFragment(othersAccount);
+        }
     }
-    else{
-        Log.d("MainActivity","有進來3 = "+uploader);
-        OthersAccountFragment othersAccount = new OthersAccountFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString("uploader", uploader);
-        othersAccount.setArguments(bundle);
-        replaceFragment(othersAccount);
-    }
-}
     @Override
     public void onBackPressed() {
         FragmentManager fragmentManager = getSupportFragmentManager();

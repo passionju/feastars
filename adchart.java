@@ -1,17 +1,18 @@
 package com.example.feastarfeed;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,6 +35,9 @@ public class adchart extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adchart);
 
+        Window window = getWindow();
+        window.setStatusBarColor(getColor(R.color.topic));
+
         listView = findViewById(R.id.listView);
         adList = new ArrayList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, adList);
@@ -50,7 +54,11 @@ public class adchart extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 adList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    adList.add(snapshot.getKey());
+
+                    String adKey = snapshot.getKey();
+                    String uploaderName = snapshot.child("uploader").getValue(String.class);
+                    String date = snapshot.child("date").getValue(String.class);
+                    adList.add("廣告主： " + uploaderName + "  上傳日期： " + date );
                 }
 
                 // 監聽withtag節點的變化
@@ -59,7 +67,10 @@ public class adchart extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         //adList.clear();
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            adList.add(snapshot.getKey());
+                            String adKey = snapshot.getKey();
+                            String uploaderName = snapshot.child("uploader").getValue(String.class);
+                            String date = snapshot.child("date").getValue(String.class);
+                            adList.add("廣告主： " + uploaderName + "  上傳日期： " + date );
                         }
                         adapter.notifyDataSetChanged();
                     }
@@ -83,13 +94,16 @@ public class adchart extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String selectedAd = adList.get(position);
+                String[] parts = selectedAd.split("##");
+                String selectedAdKey = parts[0];
                 Intent intent = new Intent(adchart.this, PieChartActivity.class);
-                intent.putExtra("selectedAd", selectedAd);
+                intent.putExtra("selectedAd", selectedAdKey);
+                Log.d("AdChartActivity", "選中的 AdKey: " + selectedAdKey);
                 startActivity(intent);
             }
         });
 
-        Button button1 = findViewById(R.id.button1);
+        ImageView button1 = findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

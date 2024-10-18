@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bluehomestudio.luckywheel.WheelItem;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class OthersAccountFragment extends Fragment {
 
@@ -54,6 +57,7 @@ public class OthersAccountFragment extends Fragment {
     int post = 0;
     int tagvideos = 0;
     String uploader;
+    CircleImageView profileImage;
 
     private long parameterRecom=4;//選擇喜好分數前幾名的加入輪盤
 
@@ -99,6 +103,7 @@ public class OthersAccountFragment extends Fragment {
         rvVideoPreview.setLayoutManager(layoutManager);
         othersAccountAdapter = new OthersAccountAdapter(getContext(),previewArrayList);
         rvVideoPreview.setAdapter(othersAccountAdapter);
+        profileImage = view.findViewById(R.id.profile_image);
         //username是目前使用者
         username = SharedPreferencesUtils.getUsername(requireContext());
 
@@ -107,6 +112,7 @@ public class OthersAccountFragment extends Fragment {
 
 
         userRef = FirebaseDatabase.getInstance().getReference("Users");
+
         personalvideoRef = FirebaseDatabase.getInstance().getReference("Users").child(uploader).child("ownVideos");
         DatabaseReference UserFollowedRef = FirebaseDatabase.getInstance().getReference("Users").child(username).child("followed");
         UserFollowedRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -333,6 +339,7 @@ public class OthersAccountFragment extends Fragment {
 //            }
 //        });
 
+        loadProfileImage();
 
         loadPersonalVideos();
 
@@ -357,6 +364,27 @@ public class OthersAccountFragment extends Fragment {
                 }
                 String nextKey = nextIndex == 1 ? "followed1" : "followed" + nextIndex;
                 listener.onKeyObtained(nextKey);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // 處理錯誤
+            }
+        });
+    }
+    private void loadProfileImage() {
+
+
+        DatabaseReference userimageRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uploader);
+        userimageRef.child("profileImageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String imageUrl = snapshot.getValue(String.class);
+                    Glide.with(getActivity())
+                            .load(imageUrl)
+                            .into(profileImage);
+                }
             }
 
             @Override
@@ -396,13 +424,14 @@ public class OthersAccountFragment extends Fragment {
                                 String videoUrl = dataSnapshot1.child("videoUrl").getValue(String.class);
                                 Long id = dataSnapshot1.child("id").getValue(Long.class);
                                 String uploader = dataSnapshot1.child("Uploader").getValue(String.class);
+                                String videoPic = snapshot.child("videoPic").getValue(String.class);
                                 Log.d("AccountFragment", "videoUrl: " + videoUrl);
                                 userRef.child(uploader).child("profileImageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         String profileImageUrl = snapshot.getValue(String.class);
                                         if (videoUrl.equals(videoName)){
-                                            Video video = new Video(videoUrl,title, address, date, price, id, uploader,profileImageUrl);
+                                            Video video = new Video(videoUrl,title, address, date, price, id, uploader,profileImageUrl,videoPic);
                                             videoList.add(video);
                                             Log.d("previewArrayList", "previewArrayList: " + previewArrayList);
                                             Log.d("VideoList", "videoList: " + videoList);
